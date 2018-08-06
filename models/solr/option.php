@@ -27,7 +27,7 @@
  * @package   hubzero-cms
  * @copyright Copyright 2005-2015 HUBzero Foundation, LLC.
  * @license   http://opensource.org/licenses/MIT MIT
- * @since     2.1.1
+ * @since     2.1.4
  */
 
 namespace Components\Search\Models\Solr;
@@ -39,59 +39,65 @@ use Hubzero\Database\Relational;
  *
  * @uses  \Hubzero\Database\Relational
  */
-class Blacklist extends Relational
+class Option extends Relational
 {
 	/**
-	 * The table namespace
-	 *
+	 * Table name
+	 * 
 	 * @var  string
-	 **/
-	protected $namespace = 'search';
+	 */
+	protected $table = '#__solr_search_filter_options';
 
 	/**
-	 * The table name 
-	 *
-	 * @var  string
-	 **/
-	protected $table = '#__search_blacklist';
-
-	/**
-	 * Default order by for model
-	 *
-	 * @var  string
-	 **/
-	public $orderBy = 'id';
-
-	/**
-	 * Fields and their validation criteria
+	 * Automatic fields to populate every time a row is updated
 	 *
 	 * @var  array
-	 **/
-	protected $rules = array(
-		'doc_id' => 'notempty'
+	 */
+	public $always = array(
+		'modified',
+		'modified_by'
 	);
 
 	/**
 	 * Automatic fields to populate every time a row is created
 	 *
 	 * @var  array
-	 **/
+	 */
 	public $initiate = array(
-		'created_by',
-		'created'
+		'created',
+		'created_by'
 	);
 
 	/**
-	 * Get all doc_ids that are prefixed by $scope
-	 * @param 	string 	$scope 	name of prefix to filter doc_ids on
-	 * @return	array	collection of doc_ids
-	 **/
-	public static function getDocIdsByScope($scope)
+	 * children 
+	 * @return  object
+	 */
+	public function filter()
 	{
-		$blackListIds = self::all()->select('doc_id')
-			->where('doc_id', 'LIKE', $scope . '%')
-			->rows()
-			->fieldsByKey('doc_id');
-		return $blackListIds;
+		return $this->belongsToOne('Filter');
+	}
+
+	/**
+	 * Generates automatic modified field value
+	 *
+	 * @param   array   $data  the data being saved
+	 * @return  string
+	 */
+	public function automaticModified($data)
+	{
+		$data['modified'] = Date::of()->toSql();
+		return $data['modified'];
+	}
+
+	/**
+	 * Generates automatic modified by field value
+	 *
+	 * @param   array   $data  the data being saved
+	 * @return  string
+	 */
+	public function automaticModifiedBy($data)
+	{
+		$data['modified_by'] = User::getInstance()->get('id');
+		return $data['modified_by'];
 	}
 }
