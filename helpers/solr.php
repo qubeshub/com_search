@@ -7,7 +7,9 @@
 
 namespace Components\Search\Helpers;
 
-use Components\Search\Models\Hubtype;
+use Components\Tags\Models\FocusArea;
+use \Hubzero\Search\Query;
+use \Hubzero\Search\Index;
 use stdClass;
 use Solarium;
 
@@ -19,23 +21,102 @@ class SolrHelper
 	public function __construct()
 	{
 		$config = Component::params('com_search');
-		$core = $config->get('solr_core');
-		$port = $config->get('solr_port');
-		$host = $config->get('solr_host');
-		$path = $config->get('solr_path');
-
-		$solrConfig = array('endpoint' =>
-			array($core =>
-				array('host' => $host, 'port' => $port,
-							'path' => $path, 'core' => $core,)
-						)
-		);
-
-		$this->connection = new Solarium\Client($solrConfig);
-		$this->query = $this->connection->createSelect();
+		$this->query = new \Hubzero\Search\Query($config);
+		$this->index = new \Hubzero\Search\Index($config);
 
 		return $this;
 	}
+
+	/**
+	 * Solr search
+	 * 
+	 * @param	$search	string	Search string
+	 * @param  	$sortBy	string	Sort by
+	 * @param  	$limit	int		Limit number of records
+	 * @param  	$start	int		Start at record
+	 * @param 	$fl		array	Filters (as focus area ids)
+	 * @param 	$facets	array	Facets (FocusArea::fromObject)
+	 * @static
+	 * @access  public
+	 * @return  mixed	 */
+	public function search($search = '', $sortBy = 'score', $limit = 0, $start = 0, $fl = array(), $facets = array())
+	{
+		$limit = (!$limit ? Config::get('list_limit') : $limit);
+
+		$leaves = array();
+		$filters = array();
+		foreach ($fl as $leaf_child) {
+			$path = array();
+			if ($fa = FocusArea::oneOrFail($leaf_child)) {
+				$child = $fa;
+				$ctag = $child->tag->tag;
+				$parent = $child->parents()->row();
+				$leaf = '"' . $parent->tag->tag . '.' . $child->tag->tag . '"';
+				while (!is_null($parent->get('id'))) {
+					$ptag = $parent->tag->tag;
+					$path[] = $ptag . '.' . $child->tag->tag;
+
+					$child = $parent; $ctag = $ptag;
+					$parent = $parent->parents()->row();
+				}
+
+				$leaves[$ctag][] = $leaf;
+				if (array_key_exists($ctag, $filters)) {
+					$filters[$ctag] = array_unique(array_merge($filters[$ctag], $path));
+				} else {
+					$filters[$ctag] = $path;
+				}
+			}
+		}
+
+		// Add sorting
+		$this->query->query($search ? $search : '*:*')->limit($limit)->start($start);
+		$this->query->sortBy($sortBy, 'desc');
+		// Always add desc by publish_up at end
+		$this->query->sortBy('publish_up', 'desc');
+
+		// Add filters
+		$this->query->addFilter('hubtype', 'hubtype:publication'); // Only publications
+		$this->query->addFilter('access_level', 'access_level:public'); // Only published
+		foreach ($leaves as $tag => $filter) {
+			if ($filter) {
+				$this->query->addFilter($tag, 'tags:(' . implode(' OR ', $filter) . ')', $tag);
+			}
+		}
+
+		// Focus areas as facets
+		foreach($facets as $fa) {
+			$fa_key = $fa->tag->tag;
+			$multifacet = $this->query->adapter->getFacetMultiQuery($fa_key);
+			// $multifacet->createQuery($fa_key, 'tags:' . $fa_key . '*')->setExcludes(array($fa_key));
+			$multifacet->createQuery($fa_key, 'tags:/' . $fa_key . '.*/')->setExcludes(array($fa_key));
+			$tags = $fa->render('search');
+			array_walk($tags, function($tag) use ($multifacet, $fa_key) {
+				$multifacet->createQuery($tag, 'tags:"' . $tag . '"')->setExcludes(array($fa_key));
+			});
+		}
+
+		// Do the solr search
+		try
+		{
+			$this->query = $this->query->run();
+		}
+		catch (\Solarium\Exception\HttpException $e)
+		{
+			$this->query->query('')->limit($limit)->start($start)->run();
+			\Notify::warning(Lang::txt('COM_SEARCH_MALFORMED_QUERY'));
+		}
+
+		// Return results
+		return array(
+			'results' => $this->query->getResults(),
+			'numFound' => $this->query->getNumFound(),
+			'leaves' => $leaves, // For view
+			'filters' => $filters, // For debugging purposes
+			'facets' => $this->query->resultsFacetSet
+		);
+	}
+
 	/**
 	 * parseDocumentID - returns a friendly way to access the type and id from a solr ID 
 	 * 
@@ -77,14 +158,7 @@ class SolrHelper
 	{
 		if ($id != null)
 		{
-			$update = $this->connection->createUpdate();
-			$update->addDeleteQuery('id:'.$id);
-			$update->addCommit();
-			$response = $this->connection->update($update);
-
-			// @FIXME: Increase error checking 
-			// Wild assumption that the update was successful
-			return true;
+			return $this->index->delete(array('id' => $id));
 		}
 		else
 		{
