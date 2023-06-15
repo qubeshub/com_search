@@ -75,8 +75,13 @@ class SolrHelper
 		// Add sorting
 		$this->query->query($search ? $search : '*:*')->limit($limit)->start($start);
 		$this->query->sortBy($sortBy, 'desc');
-		// Always add desc by publish_up at end
-		$this->query->sortBy('publish_up', 'desc');
+		// Always add desc by score and publish_up at end
+		if ($sortBy != 'score') {
+			$this->query->sortBy('score', 'desc');
+		}
+		if ($sortBy != 'publish_up') {
+			$this->query->sortBy('publish_up', 'desc');
+		}
 
 		// Add filters
 		$this->query->addFilter('hubtype', 'hubtype:publication'); // Only publications
