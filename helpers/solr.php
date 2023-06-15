@@ -39,12 +39,15 @@ class SolrHelper
 	 * @static
 	 * @access  public
 	 * @return  mixed	 */
-	public function search($search = '', $sortBy = 'score', $limit = 0, $start = 0, $fl = array(), $facets = array())
+	public function search($search = '', $sortBy = 'score', $limit = 0, $start = 0, $filters = array(), $facets = array())
 	{
 		$limit = (!$limit ? Config::get('list_limit') : $limit);
 
+		// Ontology filters
+		$fl = isset($filters['fl']) ? $filters['fl'] : array();
+		unset($filters['fl']);
 		$leaves = array();
-		$filters = array();
+		$selected = array();
 		foreach ($fl as $leaf_child) {
 			$path = array();
 			if ($fa = FocusArea::oneOrFail($leaf_child)) {
@@ -61,10 +64,10 @@ class SolrHelper
 				}
 
 				$leaves[$ctag][] = $leaf;
-				if (array_key_exists($ctag, $filters)) {
-					$filters[$ctag] = array_unique(array_merge($filters[$ctag], $path));
+				if (array_key_exists($ctag, $selected)) {
+					$selected[$ctag] = array_unique(array_merge($selected[$ctag], $path));
 				} else {
-					$filters[$ctag] = $path;
+					$selected[$ctag] = $path;
 				}
 			}
 		}
@@ -78,6 +81,9 @@ class SolrHelper
 		// Add filters
 		$this->query->addFilter('hubtype', 'hubtype:publication'); // Only publications
 		$this->query->addFilter('access_level', 'access_level:public'); // Only published
+		foreach ($filters as $filter => $value) {
+			$this->query->addFilter($filter, $filter . ':"' . $value . '"');
+		}
 		foreach ($leaves as $tag => $filter) {
 			if ($filter) {
 				$this->query->addFilter($tag, 'tags:(' . implode(' OR ', $filter) . ')', $tag);
@@ -112,7 +118,7 @@ class SolrHelper
 			'results' => $this->query->getResults(),
 			'numFound' => $this->query->getNumFound(),
 			'leaves' => $leaves, // For view
-			'filters' => $filters, // For debugging purposes
+			'filters' => $selected, // For debugging purposes
 			'facets' => $this->query->resultsFacetSet
 		);
 	}
