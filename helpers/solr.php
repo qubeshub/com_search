@@ -72,8 +72,21 @@ class SolrHelper
 			}
 		}
 
-		// Add sorting
+		// Add search query
 		$this->query->query($search ? $search : '*:*')->limit($limit)->start($start);
+
+		// Add sorting, but first convert to Solr fields
+		switch ($sortBy) {
+			case 'views':
+				$sortBy = 'hits';
+				break;
+			case 'downloads':
+				$sortBy = 'hubid';
+				break;
+			case 'date':
+				$sortBy = 'publish_up';
+				break;
+		}
 		$this->query->sortBy($sortBy, 'desc');
 		// Always add desc by score and publish_up at end
 		if ($sortBy != 'score') {
