@@ -82,7 +82,11 @@ class SolrHelper
 		$this->query->addFilter('hubtype', 'hubtype:publication'); // Only publications
 		$this->query->addFilter('access_level', 'access_level:public'); // Only published
 		foreach ($filters as $filter => $value) {
-			$this->query->addFilter($filter, $filter . ':"' . $value . '"');
+			if (!is_array($value)) {
+				$this->query->addFilter($filter, $filter . ':"' . $value . '"');
+			} else {
+				$this->query->addFilter($filter, $filter . ':(' . implode(' OR ', $value) . ')');
+			}
 		}
 		foreach ($leaves as $tag => $filter) {
 			if ($filter) {
