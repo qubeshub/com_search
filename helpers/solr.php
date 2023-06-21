@@ -28,6 +28,49 @@ class SolrHelper
 	}
 
 	/**
+     * Escape a term.
+     *
+     * A term is a single word.
+     * All characters that have a special meaning in a Solr query are escaped.
+     *
+     * If you want to use the input as a phrase please use the {@link escapePhrase()}
+     * method, because a phrase requires much less escaping.
+     *
+     * @see https://solr.apache.org/guide/the-standard-query-parser.html#escaping-special-characters
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+	public function escapeTerm($input)
+    {
+        $pattern = '/( |\+|-|&&|\|\||!|\(|\)|\{|}|\[|]|\^|"|~|\*|\?|:|\/|\\\)/';
+
+        return preg_replace($pattern, '\\\$1', $input);
+    }
+
+	/**
+     * Escape a phrase.
+     *
+     * A phrase is a group of words.
+     * Special characters will be escaped and the phrase will be surrounded by
+     * double quotes to group the input into a single phrase. So don't put
+     * quotes around the input.
+     *
+     * Do mind that you cannot build a complete query first and then pass it to
+     * this method, the whole query will be escaped. You need to escape only the
+     * 'content' of your query.
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public function escapePhrase($input)
+    {
+        return '"'.preg_replace('/("|\\\)/', '\\\$1', $input).'"';
+    }
+
+	/**
 	 * Solr search
 	 * 
 	 * @param	$search	string	Search string
@@ -73,7 +116,7 @@ class SolrHelper
 		}
 
 		// Add search query
-		$this->query->query($search ? $search : '*:*')->limit($limit)->start($start);
+		$this->query->query($search ? $this->escapeTerm($search) : '*:*')->limit($limit)->start($start);
 
 		// Add sorting, but first convert to Solr fields
 		switch ($sortBy) {
