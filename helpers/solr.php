@@ -129,6 +129,8 @@ class SolrHelper
 			case 'date':
 				$sortBy = 'publish_up';
 				break;
+			default:
+				$sortBy = 'score';
 		}
 		$this->query->sortBy($sortBy, 'desc');
 		// Always add desc by score and publish_up at end
