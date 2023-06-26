@@ -169,6 +169,9 @@ class SolrHelper
 			});
 		}
 
+		// Only need id for now
+		$this->query->fields(array('id'));
+
 		// Do the solr search
 		try
 		{
