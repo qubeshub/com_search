@@ -161,9 +161,9 @@ class SolrHelper
 		foreach($facets as $fa) {
 			$fa_key = $fa->tag->tag;
 			$multifacet = $this->query->adapter->getFacetMultiQuery($fa_key);
-			// $multifacet->createQuery($fa_key, 'tags:' . $fa_key . '*')->setExcludes(array($fa_key));
-			$multifacet->createQuery($fa_key, 'tags:/' . $fa_key . '.*/')->setExcludes(array($fa_key));
-			$tags = $fa->render('search');
+			$multifacet->createQuery($fa_key, 'tags:' . $fa_key . '.*')->setExcludes(array($fa_key));
+			$fa_filters = array_key_exists($fa_key, $selected) ? $selected[$fa_key] : array();
+			$tags = $fa->render('search', array('filters' => $fa_filters));
 			array_walk($tags, function($tag) use ($multifacet, $fa_key) {
 				$multifacet->createQuery($tag, 'tags:"' . $tag . '"')->setExcludes(array($fa_key));
 			});
