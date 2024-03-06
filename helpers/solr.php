@@ -144,6 +144,7 @@ class SolrHelper
 		// Add filters
 		$this->query->addFilter('hubtype', 'hubtype:publication'); // Only publications
 		$this->query->addFilter('access_level', 'access_level:public'); // Only published
+		$this->query->addFilter('publish_up', 'publish_up:[* TO NOW]'); // Only non-embargoed
 		foreach ($filters as $filter => $value) {
 			if (!is_array($value)) {
 				$this->query->addFilter($filter, $filter . ':"' . $value . '"');
