@@ -11,7 +11,8 @@ use Hubzero\Utility\Arr;
 
 trait canMock
 {
-
+	public $mock;
+	
 	public function mock($args = [])
 	{
 		$this->mock = $this->getMockBuilder($args['class']);
