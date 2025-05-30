@@ -20,6 +20,9 @@ use Hubzero\Utility\Arr;
 
 class BoostFactory
 {
+	var $map = null;
+
+	var $userHelper = null;
 
 	public function __construct($args = [])
 	{

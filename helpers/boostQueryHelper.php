@@ -18,6 +18,10 @@ use Hubzero\Utility\Arr;
 
 class BoostQueryHelper
 {
+	var $boostOrm;
+
+	var $queriesFactory;
+
 	protected $boosts;
 
 	public function __construct($args = [])

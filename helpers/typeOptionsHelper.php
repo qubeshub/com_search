@@ -16,6 +16,7 @@ use Hubzero\Utility\Arr;
 
 class TypeOptionsHelper
 {
+	var $typeHelper = null;
 
 	public function __construct($args = [])
 	{
