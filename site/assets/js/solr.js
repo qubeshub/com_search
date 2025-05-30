@@ -37,6 +37,6 @@ $(function(){
 		var categoryType = $(this).data('type');
 		var typeInput = $('.data-entry input[name=type]');
 		typeInput.val(categoryType);
-		$('.data-entry').submit();
+		$('#solr').submit();
 	});
 });

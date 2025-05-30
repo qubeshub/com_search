@@ -29,8 +29,9 @@ endif;
 	<h2><?php echo Lang::txt('COM_SEARCH_SEARCH'); ?></h2>
 </header><!-- / #content-header -->
 
-<form action="<?php echo Route::url('index.php?option=com_search'); ?>" method="get" class="container data-entry">
+<form action="<?php echo Route::url('index.php?option=com_search'); ?>" method="get" class="container" id="solr">
 	<section class="options section">
+		<div class="section-inner data-entry">
 		<input class="entry-search-submit" type="submit" value="<?php echo Lang::txt('Search'); ?>" />
 		<fieldset class="entry-search">
 			<legend><?php echo Lang::txt('COM_SEARCH_SITE'); ?></legend>
@@ -64,6 +65,7 @@ endif;
 				<input type="hidden" name="maxlon" id="maxlon" value="<?php if (isset($this->maxlon)) { echo $this->maxlon; } ?>" />
 			</fieldset>
 		<?php } // end if ?>
+		</div>
 	</section>
 
 	<section class="main section">
