@@ -14,7 +14,7 @@ trait isUnique
 	{
 		$isUnique = true;
 
-		foreach ($this::uniqueKeys as $fields)
+		foreach ($this::$uniqueKeys as $fields)
 		{
 			if ($this->duplicatesExist($fields))
 			{
