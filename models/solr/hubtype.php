@@ -68,7 +68,6 @@ class HubType extends Relational
 		}
 		else
 		{
-			// Accommodate the JTable class
 			$database = App::get('db');
 			$model = new $classpath($database);
 		}
