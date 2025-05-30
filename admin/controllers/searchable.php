@@ -107,6 +107,7 @@ class Searchable extends AdminController
 			}
 			if (!$recordsIndexed)
 			{
+				$recordsIndexed = array();
 				$component->set('state', SearchComponent::STATE_INDEXED);
 				$componentLink = Route::url('index.php?option=com_search&controller=' . $this->_controller . '&task=documentListing&facet=hubtype:' . $component->getSearchNamespace());
 				$recordsIndexed['state'] = SearchComponent::STATE_INDEXED; //1;
