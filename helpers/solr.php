@@ -18,6 +18,20 @@ use Solarium;
  */
 class SolrHelper
 {
+	/**
+	 * Search query object
+	 *
+	 * @var  \Hubzero\Search\Query
+	 */
+	public $query;
+
+	/**
+	 * Search index object
+	 *
+	 * @var  \Hubzero\Search\Index
+	 */
+	public $index;
+
 	public function __construct()
 	{
 		$config = Component::params('com_search');
