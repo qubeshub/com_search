@@ -176,16 +176,18 @@ class SolrHelper
 		foreach($facets as $fa) {
 			$fa_key = $fa->tag->tag;
 			$multifacet = $this->query->adapter->getFacetMultiQuery($fa_key);
-			$multifacet->createQuery($fa_key, 'tags:/' . $fa_key . '.*/')->getLocalParameters()->addExcludes(array($fa_key));
+			$multifacet->createQuery($fa_key, 'tags:/' . $fa_key . '.*/')->getLocalParameters()->clearExcludes()->setExclude($fa_key);
 			$fa_filters = array_key_exists($fa_key, $selected) ? $selected[$fa_key] : array();
 			$tags = $fa->render('search', array('filters' => $fa_filters));
 			array_walk($tags, function($tag) use ($multifacet, $fa_key) {
-				$multifacet->createQuery($tag, 'tags:"' . $tag . '"')->getLocalParameters()->addExcludes(array($fa_key));
+				$multifacet->createQuery($tag, 'tags:"' . $tag . '"')->getLocalParameters()->clearExcludes()->setExclude($fa_key);
 			});
 		}
 
 		// Only need id for now
 		$this->query->fields(array('id'));
+
+		$debug_request = $this->query->adapter->connection->createRequest($this->query->adapter->query);
 
 		// Do the solr search
 		try
@@ -204,7 +206,8 @@ class SolrHelper
 			'numFound' => $this->query->getNumFound(),
 			'leaves' => $leaves, // For view
 			'filters' => $selected, // For debugging purposes
-			'facets' => $this->query->resultsFacetSet
+			'facets' => $this->query->resultsFacetSet,
+			'uri' => $debug_request->getUri() // For debugging purposes
 		);
 	}
 
