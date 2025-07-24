@@ -130,7 +130,7 @@ class SolrHelper
 		}
 
 		// Add search query
-		$this->query->query($search ? $this->escapeTerm(trim($search)) : '*:*')->limit($limit)->start($start);
+		$this->query->query($search ? $search : '*:*')->limit($limit)->start($start);
 
 		// Add sorting, but first convert to Solr fields
 		switch ($sortBy) {
