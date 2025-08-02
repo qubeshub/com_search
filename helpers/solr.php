@@ -189,6 +189,15 @@ class SolrHelper
 
 		$debug_request = $this->query->adapter->connection->createRequest($this->query->adapter->query);
 
+		// Edismax (allows for phrase and term matching)
+		$queryFields = 'url^10 doi^10 title^5 keywords^2 description author group subject';
+		$phraseFields = 'title^5 keywords^2 description author group subject';
+		$phraseSlop = '10';
+		$edismax = $this->query->adapter->query->getEDisMax();
+		$edismax->setQueryFields($queryFields);
+		$edismax->setPhraseFields($phraseFields);
+		$edismax->setPhraseSlop($phraseSlop);
+
 		// Do the solr search
 		try
 		{
