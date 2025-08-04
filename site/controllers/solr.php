@@ -317,7 +317,7 @@ class Solr extends SiteController
 			'regex'  => "|%s|iu"
 		);
 
-		$snippetFields = array('description', 'fulltext', 'abstract');
+		$snippetFields = array('abstract', 'description', 'fulltext');
 
 		// Format the results for the view
 		foreach ($results as &$result)

@@ -61,12 +61,21 @@
 				<?php endforeach; ?>
 			</ul>
 		</div>
-	<?php elseif (isset($this->result['tags'])): ?>
+	<?php elseif (isset($this->result['tags']) && ($this->result['hubtype'] !== 'publication')): ?>
 		<!-- Tags -->
 		<div class="result-tags">
 			<ul class="tags">
 				<?php foreach ($this->result['tags'] as $tag): ?>
 					<li><a class="tag" href="<?php echo Route::url('index.php?option=com_search&terms=' . $tag); ?>"><?php echo $tag; ?></a></li>
+				<?php endforeach; ?>
+			</ul>
+		</div>
+	<?php elseif (isset($this->result['keywords'])): ?>
+		<!-- Keywords -->
+		<div class="result-tags">
+			<ul class="tags">
+				<?php foreach (explode(',', $this->result['keywords']) as $kw): ?>
+					<li><a class="tag" href="<?php echo Route::url('index.php?option=com_publications&task=browse&search=' . $kw); ?>"><?php echo $kw; ?></a></li>
 				<?php endforeach; ?>
 			</ul>
 		</div>
