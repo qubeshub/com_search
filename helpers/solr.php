@@ -12,6 +12,7 @@ use \Hubzero\Search\Query;
 use \Hubzero\Search\Index;
 use stdClass;
 use Solarium;
+use Component;
 
 /**
  * Solr helper class
