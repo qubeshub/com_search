@@ -116,7 +116,15 @@ endif;
 						<div class="results list"><!-- add "tiled" to class for tiled view -->
 							<?php foreach ($this->results as $result): ?>
 								<?php
-									$hubType = isset($result['hubtype']) ? strtolower($result['hubtype']) : '';
+									if (is_array($result))
+									{
+										$hubType = isset($result['hubtype']) ? strtolower($result['hubtype']) : '';
+									}
+									else
+									{
+										$hubType = isset($result->result['hubtype']) ? strtolower($result->result['hubtype']) : '';
+									}
+
 									$templateOverride = '';
 									if (!empty($this->viewOverrides[$hubType]))
 									{
@@ -130,7 +138,7 @@ endif;
 									{
 										$this->setLayout('_result')
 											->setName('solr')
-											->set('result', $result)
+											->set('result', is_array($result) ? $result : $result->result)
 											->set('terms', $terms)
 											->set('tagSearch', $tagSearchEnabled)
 											->display();
